@@ -3,4 +3,4 @@ Repository for the MATLAB code for the final project of the UniTS course in Comp
 
 The main branch of this repo includes three MATLAB codes, one for each task. In the assignement there were also short optional tasks that are included in the relative files. The folder 'workspace' includes MATLAB variables that needs long computational times, and so are saved separately for faster loading. One can optionally delete and recompute them to fit necessities.
 
-The project was carried on by Damiano Ravalico and Lorenzo Elia.  @lorenzoelia
+The project was carried on by Damiano Ravalico and Lorenzo Elia.
