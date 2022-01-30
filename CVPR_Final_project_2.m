@@ -44,7 +44,7 @@ layers = [
     convolution2dLayer(7, 32, 'Stride', 1, 'Padding', 'same', 'Name', 'conv_3')
     batchNormalizationLayer('Name', 'BN_3')
     reluLayer('Name', 'relu_3')
-    dropoutLayer(0.5, 'Name', 'dropout')
+    dropoutLayer(0.75, 'Name', 'dropout')
     fullyConnectedLayer(15, 'Name', 'fc')
     softmaxLayer('Name', 'softmax')
     classificationLayer('Name', 'output')
@@ -93,25 +93,26 @@ plotconfusion(YTest, YPredicted)
 % independently trained network. Since it's a multiclass classification
 % problem, the prediction will consider the majority voted classes by each
 % netowork
+numberOfNets = 5;
 
 % Check if it's already present an ensemble of nets
 if isfile('workspace\ensembleOfNets.mat')
     load('workspace\ensembleOfNets.mat', 'nets');
 else
     % Train a new ensemble of nets
-    numberOfNets = 10;
     nets = cell(1, numberOfNets);
     
     for i = 1:numberOfNets
         [imdsTrain, imdsValidation] = splitEachLabel(imds, quotaForEachLabel, 'randomize');
         augImdsTrain = augmentedImageDatastore(imageSize, imdsTrain, 'DataAugmentation', aug);
-        
+        augImdsValidation = augmentedImageDatastore(imageSize, imdsValidation);
+
         options = trainingOptions('sgdm',...
                                   'InitialLearnRate', 0.01, ...
                                   'MaxEpochs', 30, ...
                                   'MiniBatchSize', miniBatchSize, ...
                                   'Shuffle', 'every-epoch', ...
-                                  'ValidationData', imdsValidation, ...
+                                  'ValidationData', augImdsValidation, ...
                                   'ValidationFrequency', valFrequency, ...
                                   'ValidationPatience', 4, ...
                                   'ExecutionEnvironment', 'parallel', ...
@@ -128,7 +129,7 @@ end
 % Get the prediction values for each net of the ensemble
 netsYPredicted = cell(1, numberOfNets);
 for i = 1:numberOfNets
-    netsYPredicted{1,i} = classify(nets{1,i}, imdsTest);
+    netsYPredicted{1,i} = classify(nets{1,i}, augImdsTest);
 end
 
 % Apply majority voting to create a new set average predicted categories
@@ -149,7 +150,7 @@ plotconfusion(YTest, majorityYPredicted)
 % addition to horizontal reflection.
 aug = imageDataAugmenter('RandXReflection', true, ...
                          'RandRotation', [-15 15], ...
-                         'RandScale', [0.5 1.5]);
+                         'RandScale', [0.5 2]);
 
 augImdsTrain = augmentedImageDatastore(imageSize, imdsTrain, ...
                                        'DataAugmentation', aug, ...
@@ -176,6 +177,8 @@ layers = [
     reluLayer('Name', 'relu_2')
     maxPooling2dLayer(2, 'Stride', 2, 'Name', 'maxpool_2')
 
+    dropoutLayer(0.25, 'Name', 'dropout_1')
+
     convolution2dLayer(7, 32, 'Stride', 1, 'Padding', 'same', 'Name', 'conv_3')
     batchNormalizationLayer('Name', 'BN_3')
     reluLayer('Name', 'relu_3')
@@ -185,8 +188,8 @@ layers = [
     batchNormalizationLayer('Name', 'BN_4')
     reluLayer('Name', 'relu_4')
 
-    fullyConnectedLayer(15, 'Name', 'FC_1')
-    dropoutLayer(0.75, 'Name', 'dropout')
+    dropoutLayer(0.5, 'Name', 'dropout_2')
+
     fullyConnectedLayer(15, 'Name', 'FC_2')
     softmaxLayer('Name', 'softmax')
     classificationLayer('Name', 'output')

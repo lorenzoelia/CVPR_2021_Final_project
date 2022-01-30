@@ -70,7 +70,7 @@ options = trainingOptions('sgdm', ...
 
 netTransfer = trainNetwork(augimdsTrain, layers, options);
 
-%% Evaluation on test set
+% Evaluation on test set
 % Test set
 testDatasetPath  = fullfile('test');
 
@@ -113,7 +113,7 @@ for i = 1:length(classes)
 
     YTrain = trainingSet.Labels;
 
-    SVMs1vsAll{1,i} = fitcsvm(featuresTrain, YTrain);
+    SVMs1vsAll{1,i} = fitcsvm(featuresTrain, YTrain, 'KernelFunction', 'linear');
     
     % Classify the test images using the trained SVM model using the features 
     % extracted from the test images.
@@ -138,7 +138,7 @@ finalYPred = classes(i);
 % Calculate the classification accuracy on the test set. Accuracy is the 
 % fraction of labels that the network predicts correctly.
 YTest = imdsTest.Labels;
-accuracy = sum(finalYPred == YTest)/numel(YTest);
+accuracy = mean(finalYPred == YTest);
 disp(['Test accuracy: ', num2str(accuracy)])
 
 % Confusion matrix
@@ -147,6 +147,8 @@ plotconfusion(YTest, finalYPred)
 
 %% Multiclass SVM classification using non-linear kernel
 % Task 6 (optional)
+SVMs1vsAll = cell(1, numClasses);
+YPred = cell(1, numClasses);
 
 for i = 1:length(classes)
     trainingSet = copy(imdsTrain);
@@ -154,7 +156,7 @@ for i = 1:length(classes)
 
     YTrain = trainingSet.Labels;
 
-    SVMs1vsAll{1,i} = fitckernel(featuresTrain, YTrain); % Instead of fitcsvm which employs a linear kernel
+    SVMs1vsAll{1,i} = fitcsvm(featuresTrain, YTrain, 'KernelFunction', 'gaussian'); 
 
     [YPred{1,i}, YPred{2,i}] = predict(SVMs1vsAll{1,i}, featuresTest);
 end
@@ -162,6 +164,7 @@ end
 % generalYPred = cat(2, YPred{1,:});
 temp = cat(2, YPred{2,:});
 generalScores = temp(:, 1:2:end);
+clear temp
 
 [~, i] = max(generalScores, [], 2);
 
@@ -169,7 +172,7 @@ finalYPred = classes(i);
 
 % Accuracy
 YTest = imdsTest.Labels;
-accuracy = sum(finalYPred == YTest)/numel(YTest);
+accuracy = mean(finalYPred == YTest);
 disp(['Test accuracy: ', num2str(accuracy)])
 
 % Confusion matrix
@@ -200,6 +203,5 @@ aug = imageDataAugmenter('RandXReflection', true, ...
 augImdsTrain = augmentedImageDatastore(imageSize, imdsTrain, ...
                                        'DataAugmentation', aug, ...
                                        'OutputSizeMode', 'randcrop');
-
 augImdsValidation = augmentedImageDatastore(imageSize, imdsValidation);
 
