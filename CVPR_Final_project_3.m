@@ -77,10 +77,10 @@ testDatasetPath  = fullfile('test');
 imdsTest = imageDatastore(testDatasetPath, 'IncludeSubfolders', true, 'LabelSource', 'foldernames');
 
 imdsTest.ReadFcn = @(x)cat(3, imread(x), imread(x), imread(x));
-augImdsTest = augmentedImageDatastore(inputSize, imdsTest);
+augimdsTest = augmentedImageDatastore(inputSize, imdsTest);
 
 % Apply the network to the test set
-YPredicted = classify(netTransfer, augImdsTest);
+YPredicted = classify(netTransfer, augimdsTest);
 YTest = imdsTest.Labels;
 
 % Overall accuracy
@@ -95,12 +95,13 @@ plotconfusion(YTest, YPredicted)
 % Extract the activation map from the last convolutional layer
 layer = 'myFC';
 featuresTrain = activations(netTransfer, augimdsTrain, layer, 'OutputAs', 'rows');
-featuresTest = activations(netTransfer, augImdsTest, layer, 'OutputAs', 'rows');
+featuresTest = activations(netTransfer, augimdsTest, layer, 'OutputAs', 'rows');
+
+classes = unique(imds.Labels);
 
 whos featuresTrain
 
 % One-against-all approach
-classes = unique(imds.Labels);
 SVMs1vsAll = cell(1, numClasses);
 YPred = cell(1, numClasses);
 
@@ -156,7 +157,7 @@ for i = 1:length(classes)
 
     YTrain = trainingSet.Labels;
 
-    SVMs1vsAll{1,i} = fitcsvm(featuresTrain, YTrain, 'KernelFunction', 'gaussian'); 
+    SVMs1vsAll{1,i} = fitcsvm(featuresTrain, YTrain, 'KernelFunction', 'gaussian', 'KernelScale', 'auto'); 
 
     [YPred{1,i}, YPred{2,i}] = predict(SVMs1vsAll{1,i}, featuresTest);
 end
@@ -172,7 +173,7 @@ finalYPred = classes(i);
 
 % Accuracy
 YTest = imdsTest.Labels;
-accuracy = mean(finalYPred == YTest);
+accuracy = sum(finalYPred == YTest)/numel(YTest);
 disp(['Test accuracy: ', num2str(accuracy)])
 
 % Confusion matrix
