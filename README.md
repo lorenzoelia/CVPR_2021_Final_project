@@ -7,4 +7,4 @@ The dataset used is the 'Fifteen scene categories' introduced in (Lazebnik, 2006
 
 The project was carried on by Damiano Ravalico and Lorenzo Elia.
 
-Update 02/02/2022: The file CVPR_Final_project_3 had an error in the SVM formulation with Gaussian kernel. The 'KernelScale' parameter was missing and thus the test accuracy with this model was about 7%. Corrected and now is about 86%.
+Update 02/02/2022: The file CVPR_Final_project_3 had an error in the SVM formulation with Gaussian kernel. The 'KernelScale' parameter for the 'fitcsvm' function was missing and thus the test accuracy with this model was about 7%. Corrected and now is about 86%.
